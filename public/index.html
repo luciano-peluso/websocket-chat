@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chat con WebSockets</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+    }
+    #messages {
+      border: 1px solid #ccc;
+      padding: 10px;
+      height: 300px;
+      overflow-y: scroll;
+      margin-bottom: 10px;
+    }
+    input {
+      width: calc(100% - 100px);
+      padding: 10px;
+    }
+    button {
+      padding: 10px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Chat con WebSockets</h1>
+  <div id="messages"></div>
+  <input type="text" id="messageInput" placeholder="Escribe tu mensaje">
+  <button id="sendButton">Enviar</button>
+
+  <script>
+    const messagesDiv = document.getElementById('messages');
+    const messageInput = document.getElementById('messageInput');
+    const sendButton = document.getElementById('sendButton');
+
+    
+    const socket = new WebSocket(`ws://${location.host}`);
+
+    
+    socket.onmessage = async (event) => {
+        let message = event.data;
+
+        // Si el mensaje es un Blob, convertilo a texto
+        if (message instanceof Blob) {
+            message = await message.text();
+        }
+        const hora = new Date();
+        const newMessage = document.createElement('div');
+        newMessage.textContent = "[" + hora.getHours() + ":" + hora.getMinutes() + ":" + (hora.getSeconds() > 9 ? hora.getSeconds() : '0'+hora.getSeconds()) + "]: " + message; // Ahora mostramos correctamente el texto
+        messagesDiv.appendChild(newMessage);
+        messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    };
+
+    
+    sendButton.addEventListener('click', () => {
+      const message = messageInput.value;
+      if (message) {
+        socket.send(message);
+        messageInput.value = '';
+      }
+    });
+  </script>
+</body>
+</html>
